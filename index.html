@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playmate - Let's Play Together</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#100d1c;
+ color:white;
+}
+header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:20px 7%;
+ border-bottom:1px solid #302641;
+}
+.logo{font-size:26px;font-weight:bold;color:#c7a5ff}
+select,input{
+ background:#211a30;
+ color:white;
+ border:1px solid #594477;
+ border-radius:12px;
+ padding:12px;
+ font:inherit;
+}
+button{
+ background:#9561df;
+ color:white;
+ border:0;
+ border-radius:12px;
+ padding:12px 18px;
+ font:inherit;
+ font-weight:bold;
+ cursor:pointer;
+ margin:5px;
+}
+button:hover{background:#aa7cf0}
+button:disabled{opacity:.4;cursor:not-allowed}
+main{
+ max-width:1000px;
+ margin:45px auto;
+ padding:20px;
+ text-align:center;
+}
+h1{font-size:40px}
+h1 span{color:#c7a5ff}
+.subtitle{color:#b9aec9;font-size:18px}
+.panel{
+ background:#1c1729;
+ border:1px solid #392b50;
+ border-radius:22px;
+ padding:25px;
+ margin:25px auto;
+ max-width:700px;
+ text-align:center;
+}
+input{width:100%;margin:8px 0}
+.actions{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:10px;
+}
+.games{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+ gap:16px;
+ margin-top:25px;
+}
+.game{
+ background:#211a30;
+ border:1px solid #423254;
+ border-radius:18px;
+ padding:22px;
+ cursor:pointer;
+}
+.game:hover{border-color:#c7a5ff}
+.emoji{font-size:35px}
+.game p{color:#b9aec9;font-size:14px}
+#mafiaScreen{display:none}
+#mafiaPlayers{list-style:none;padding:0}
+#mafiaPlayers li{
+ background:#292139;
+ padding:10px;
+ margin:7px;
+ border-radius:10px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+#mafiaPlayers button{background:#9b405e;padding:7px 12px}
+#mafiaResult{margin-top:25px}
+.timer{font-size:55px;color:#c7a5ff}
+.player-option{
+ display:block;
+ width:100%;
+ margin:10px 0;
+ background:#302442;
+ border:1px solid #594477;
+}
+.player-option:hover{background:#594078}
+.status{color:#c7a5ff;margin:12px}
+.voice-controls{
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ flex-wrap:wrap;
+ gap:8px;
+ margin:12px 0;
+}
+.small{font-size:13px;color:#b9aec9}
+footer{text-align:center;padding:30px;color:#82778f}
+@media(max-width:550px){
+ h1{font-size:32px}
+ .actions{grid-template-columns:1fr}
+ header{padding:15px}
+ .panel{padding:17px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">🎮 PLAYMATE</div>
+ <select id="language">
+  <option value="ar">العربية</option>
+  <option value="tr">Türkçe</option>
+  <option value="en">English</option>
+ </select>
+</header>
+
+<main id="home">
+ <h1 id="welcome">اللعب أحلى <span>مع الأصدقاء</span></h1>
+ <p class="subtitle" id="subtitle">
+  اجمعوا أصحابكم، اختاروا لعبة، وابدؤوا المتعة!
+ </p>
+
+ <section class="panel">
+  <input id="playerName" placeholder="اكتبي اسمك">
+
+  <div class="actions">
+   <button id="create">＋ إنشاء غرفة</button>
+   <button id="join">انضمام إلى غرفة</button>
+  </div>
+
+  <input id="roomCode" placeholder="أدخلي رمز الغرفة للانضمام">
+  <div id="message"></div>
+ </section>
+
+ <h2 id="gamesTitle">🎲 اختاري لعبتك</h2>
+
+ <section class="games">
+  <div class="game" id="mafiaCard">
+   <div class="emoji">🕵️</div>
+   <h3 id="g1">المافيا</h3>
+   <p id="d1">اكتشفوا من هو المجرم!</p>
+   <button id="playMafia">ابدأ اللعب</button>
+  </div>
+
+  <div class="game">
+   <div class="emoji">🔎</div>
+   <h3 id="g2">الجاسوس</h3>
+   <p id="d2">اكتشفوا من لا يعرف المكان.</p>
+  </div>
+
+  <div class="game">
+   <div class="emoji">🎭</div>
+   <h3 id="g3">التمثيل</h3>
+   <p id="d3">مثّلوا وخمّنوا الكلمات.</p>
+  </div>
+
+  <div class="game">
+   <div class="emoji">🧠</div>
+   <h3 id="g4">معلومات عامة</h3>
+   <p id="d4">اختبروا معلوماتكم.</p>
+  </div>
+
+  <div class="game">
+   <div class="emoji">🙋</div>
+   <h3 id="g5">من أنا؟</h3>
+   <p id="d5">خمنوا الشخصية.</p>
+  </div>
+
+  <div class="game">
+   <div class="emoji">🎨</div>
+   <h3 id="g6">ارسم وخمّن</h3>
+   <p id="d6">ارسموا ودعوا الآخرين يخمنون.</p>
+  </div>
+ </section>
+</main>
+
+<section id="mafiaScreen" class="panel">
+ <h2 id="mafiaHeading">🕵️ لعبة المافيا</h2>
+ <p id="mafiaIntro">أضيفوا أسماء اللاعبين. نحتاج 4 لاعبين على الأقل.</p>
+
+ <div class="voice-controls">
+  <button id="voiceToggle">🔊 الصوت: يعمل</button>
+  <button id="testVoice">🎙️ تجربة الصوت</button>
+ </div>
+
+ <label id="voiceLabel" class="small">مستوى الصوت</label>
+ <input id="volume" type="range" min="0" max="1" step="0.1" value="1">
+
+ <input id="mafiaPlayer" placeholder="اسم اللاعب">
+ <button id="addPlayerBtn">إضافة لاعب</button>
+
+ <ul id="mafiaPlayers"></ul>
+
+ <button id="startGameBtn">ابدأ اللعبة 🎭</button>
+ <button id="homeBtn">العودة للرئيسية</button>
+
+ <div id="mafiaResult"></div>
+</section>
+
+<footer>PLAYMATE © 2026</footer>
+<script>
+const words={
+ar:{
+welcome:'اللعب أحلى <span>مع الأصدقاء</span>',
+subtitle:'اجمعوا أصحابكم، اختاروا لعبة، وابدؤوا المتعة!',
+name:'اكتبي اسمك',create:'＋ إنشاء غرفة',join:'انضمام إلى غرفة',
+code:'أدخلي رمز الغرفة للانضمام',games:'🎲 اختاري لعبتك',
+names:['المافيا','الجاسوس','التمثيل','معلومات عامة','من أنا؟','ارسم وخمّن'],
+desc:['اكتشفوا من هو المجرم!','اكتشفوا من لا يعرف المكان.','مثّلوا وخمّنوا الكلمات.','اختبروا معلوماتكم.','خمنوا الشخصية.','ارسموا ودعوا الآخرين يخمنون.'],
+empty:'اكتبي اسمك أولاً.',created:'تم إنشاء الغرفة: ',enter:'أدخلي رمز الغرفة أولاً.',joined:'تم الانضمام للغرفة: ',
+mafiaTitle:'🕵️ لعبة المافيا',intro:'أضيفوا أسماء اللاعبين. نحتاج 4 لاعبين على الأقل.',
+voiceOn:'🔊 الصوت: يعمل',voiceOff:'🔇 الصوت: متوقف',
+test:'مرحبًا بكم في لعبة المافيا. استعدوا للعب!',
+voiceLabel:'مستوى الصوت',player:'اسم اللاعب',add:'إضافة لاعب',
+start:'ابدأ اللعبة 🎭',home:'العودة للرئيسية',need:'نحتاج 4 لاعبين على الأقل!',
+duplicate:'هذا الاسم موجود بالفعل.',emptyPlayer:'اكتبي اسم اللاعب أولاً.',
+remove:'حذف',roles:'توزيع الأدوار',pass:'مرّروا الجهاز إلى: ',
+private:'تأكدوا أن بقية اللاعبين لا يشاهدون الشاشة.',
+reveal:'اكشف دوري',hide:'إخفاء الدور وتسليم الجهاز',
+night:'🌙 بدأ الليل',nightText:'على الجميع إغماض أعينهم.',
+mafia:'🔪 المافيا تستيقظ',mafiaText:'المافيا فقط تفتح عيونها وتختار ضحيتها.',
+doctor:'🩺 الطبيب يستيقظ',doctorText:'الطبيب يختار شخصًا لحمايته.',
+detective:'🔍 المحقق يستيقظ',detectiveText:'المحقق يختار شخصًا لفحصه.',
+morning:'🌅 أشرقت الشمس',morningText:'الجميع يستيقظ!',
+discussion:'🗣️ وقت النقاش',
+discussionText:'ناقشوا من تشكون فيه وحاولوا اكتشاف المافيا!',
+vote:'🗳️ وقت التصويت',voteText:'مرّروا الجهاز لكل لاعب ليصوّت سرًا.',
+next:'التالي',choose:'اختاروا لاعبًا:',victim:'من تريد المافيا قتله؟',
+protect:'من تريد حمايته؟',investigate:'من تريد فحصه؟',
+checkMafia:'هذا اللاعب من المافيا!',checkTown:'هذا اللاعب ليس من المافيا.',
+saved:'نجح الطبيب في إنقاذ الضحية! ❤️',killed:'تم إخراج: ',
+nobody:'لم يُقتل أحد هذه الليلة.',passVote:'مرّروا الجهاز إلى: ',
+voteFor:'صوّت لإخراج لاعب من اللعبة.',votes:'نتائج التصويت',
+eliminated:'تم إخراج اللاعب: ',tie:'تعادل في الأصوات! سنعيد التصويت بين المتعادلين.',
+tieAgain:'استمر التعادل، لن يخرج أحد هذه الجولة.',noVotes:'لا توجد أصوات كافية.',
+townWin:'🎉 فاز فريق المواطنين!',mafiaWin:'🔪 فازت المافيا!',
+newNight:'ابدأ ليلة جديدة 🌙',alive:'على قيد اللعب',dead:'خرج من اللعبة',
+selected:'تم الاختيار بنجاح.',seconds:'ثانية',endDiscussion:'انتهى النقاش',
+startAgain:'إعادة اللعبة',rolesList:{mafia:'مافيا',doctor:'طبيب',detective:'محقق',citizen:'مواطن'},
+phaseNight:'حلّ الليل. على الجميع إغماض أعينهم.',
+phaseMafia:'المافيا، استيقظوا واختاروا.',
+phaseDoctor:'أيها الطبيب، استيقظ واختر من تحميه.',
+phaseDetective:'أيها المحقق، استيقظ وافحص أحد اللاعبين.',
+phaseMorning:'أشرقت الشمس. استيقظوا جميعًا.',
+phaseDiscussion:'لديكم دقيقة واحدة للنقاش.',
+phaseVote:'انتهى النقاش، حان وقت التصويت.',
+roleMafia:'أنت المافيا. اختر ضحيتك سرًا.',
+roleDoctor:'أنت الطبيب. اختر من تريد حمايته.',
+roleDetective:'أنت المحقق. افحص أحد اللاعبين.',
+roleCitizen:'أنت مواطن. حاول اكتشاف المافيا.',
+noPlayers:'لا يوجد لاعبون متاحون للاختيار.'
+},
+en:{
+welcome:'Play better <span>with friends</span>',
+subtitle:'Gather your friends, pick a game, and have fun!',
+name:'Enter your name',create:'＋ Create Room',join:'Join a Room',
+code:'Enter room code to join',games:'🎲 Choose your game',
+names:['Mafia','Spy','Charades','Trivia','Who Am I?','Draw & Guess'],
+desc:['Find the criminal!','Find who does not know the location.','Act and guess.','Test your knowledge.','Guess the character.','Draw and let others guess.'],
+empty:'Enter your name first.',created:'Room created: ',enter:'Enter a room code first.',joined:'Joined room: ',
+mafiaTitle:'🕵️ Mafia Game',intro:'Add players. At least 4 players are required.',
+voiceOn:'🔊 Voice: On',voiceOff:'🔇 Voice: Off',
+test:'Welcome to Mafia. Get ready to play!',
+voiceLabel:'Volume',player:'Player name',add:'Add player',
+start:'Start game 🎭',home:'Back to home',need:'At least 4 players are required!',
+duplicate:'This name already exists.',emptyPlayer:'Enter a player name first.',
+remove:'Remove',roles:'Assigning roles',pass:'Pass the device to: ',
+private:'Make sure nobody else can see the screen.',
+reveal:'Reveal my role',hide:'Hide role and pass the device',
+night:'🌙 Night begins',nightText:'Everyone close your eyes.',
+mafia:'🔪 Mafia wakes up',mafiaText:'Mafia, open your eyes and choose a victim.',
+doctor:'🩺 Doctor wakes up',doctorText:'Doctor, choose someone to protect.',
+detective:'🔍 Detective wakes up',detectiveText:'Detective, choose someone to investigate.',
+morning:'🌅 Morning has come',morningText:'Everyone wake up!',
+discussion:'🗣️ Discussion time',discussionText:'Discuss who you suspect!',
+vote:'🗳️ Voting time',voteText:'Pass the device so each player can vote privately.',
+next:'Next',choose:'Choose a player:',victim:'Who should the mafia eliminate?',
+protect:'Who do you want to protect?',investigate:'Who do you want to investigate?',
+checkMafia:'This player is Mafia!',checkTown:'This player is not Mafia.',
+saved:'The doctor saved the victim! ❤️',killed:'Eliminated: ',
+nobody:'Nobody was eliminated tonight.',passVote:'Pass the device to: ',
+voteFor:'Vote to eliminate a player.',votes:'Voting results',
+eliminated:'Player eliminated: ',tie:'It is a tie! A revote will take place.',
+tieAgain:'Another tie. Nobody is eliminated.',noVotes:'Not enough votes.',
+townWin:'🎉 The town wins!',mafiaWin:'🔪 The Mafia wins!',
+newNight:'Start another night 🌙',alive:'Alive',dead:'Eliminated',
+selected:'Selection saved.',seconds:'seconds',endDiscussion:'End discussion',
+startAgain:'Restart game',rolesList:{mafia:'Mafia',doctor:'Doctor',detective:'Detective',citizen:'Citizen'},
+phaseNight:'Night begins. Everyone close your eyes.',
+phaseMafia:'Mafia, wake up and make your choice.',
+phaseDoctor:'Doctor, wake up and choose someone to protect.',
+phaseDetective:'Detective, wake up and investigate a player.',
+phaseMorning:'Morning has come. Wake up everyone.',
+phaseDiscussion:'You have one minute to discuss.',
+phaseVote:'Discussion is over. It is time to vote.',
+roleMafia:'You are the Mafia. Choose a victim secretly.',
+roleDoctor:'You are the Doctor. Choose someone to protect.',
+roleDetective:'You are the Detective. Investigate a player.',
+roleCitizen:'You are a Citizen. Find the Mafia.',
+noPlayers:'No available players.'
+},
+tr:{
+welcome:'Arkadaşlarla <span>oyun daha güzel</span>',
+subtitle:'Arkadaşlarını topla, oyununu seç ve eğlen!',
+name:'Adını yaz',create:'＋ Oda oluştur',join:'Odaya katıl',
+code:'Katılmak için oda kodunu gir',games:'🎲 Oyununuzu seçin',
+names:['Mafya','Casus','Sessiz sinema','Genel kültür','Ben kimim?','Çiz ve tahmin et'],
+desc:['Suçluyu bulun!','Yeri bilmeyeni bulun.','Anlat ve tahmin et.','Bilginizi test edin.','Karakteri tahmin edin.','Çizin ve tahmin ettirin.'],
+empty:'Önce adını yaz.',created:'Oda oluşturuldu: ',enter:'Önce oda kodunu gir.',joined:'Odaya katıldınız: ',
+mafiaTitle:'🕵️ Mafya Oyunu',intro:'Oyuncuları ekleyin. En az 4 oyuncu gereklidir.',
+voiceOn:'🔊 Ses: Açık',voiceOff:'🔇 Ses: Kapalı',
+test:'Mafya oyununa hoş geldiniz. Hazır olun!',
+voiceLabel:'Ses seviyesi',player:'Oyuncu adı',add:'Oyuncu ekle',
+start:'Oyunu başlat 🎭',home:'Ana sayfaya dön',need:'En az 4 oyuncu gereklidir!',
+duplicate:'Bu isim zaten mevcut.',emptyPlayer:'Önce oyuncu adını yazın.',
+remove:'Sil',roles:'Roller dağıtılıyor',pass:'Cihazı şu oyuncuya verin: ',
+private:'Diğer oyuncuların ekranı görmediğinden emin olun.',
+reveal:'Rolümü göster',hide:'Rolü gizle ve cihazı ver',
+night:'🌙 Gece başladı',nightText:'Herkes gözlerini kapatsın.',
+mafia:'🔪 Mafya uyanıyor',mafiaText:'Mafya gözlerini açsın ve kurbanını seçsin.',
+doctor:'🩺 Doktor uyanıyor',doctorText:'Doktor koruyacağı kişiyi seçsin.',
+detective:'🔍 Dedektif uyanıyor',detectiveText:'Dedektif bir oyuncuyu kontrol etsin.',
+morning:'🌅 Sabah oldu',morningText:'Herkes uyansın!',
+discussion:'🗣️ Tartışma zamanı',discussionText:'Şüphelendiğiniz kişileri tartışın!',
+vote:'🗳️ Oylama zamanı',voteText:'Her oyuncu gizlice oy kullansın.',
+next:'İleri',choose:'Bir oyuncu seçin:',victim:'Mafya kimi öldürmek istiyor?',
+protect:'Kimi korumak istiyorsun?',investigate:'Kimi araştırmak istiyorsun?',
+checkMafia:'Bu oyuncu mafya!',checkTown:'Bu oyuncu mafya değil.',
+saved:'Doktor oyuncuyu kurtardı! ❤️',killed:'Oyundan çıkarıldı: ',
+nobody:'Bu gece kimse elenmedi.',passVote:'Cihazı şu oyuncuya verin: ',
+voteFor:'Oyundan çıkarmak için oy verin.',votes:'Oylama sonuçları',
+eliminated:'Oyundan çıkarılan oyuncu: ',tie:'Oylar eşit! Tekrar oylama yapılacak.',
+tieAgain:'Yine eşitlik var. Kimse elenmedi.',noVotes:'Yeterli oy yok.',
+townWin:'🎉 Kasaba kazandı!',mafiaWin:'🔪 Mafya kazandı!',
+newNight:'Yeni geceyi başlat 🌙',alive:'Oyunda',dead:'Elendi',
+selected:'Seçim kaydedildi.',seconds:'saniye',endDiscussion:'Tartışmayı bitir',
+startAgain:'Oyunu yeniden başlat',rolesList:{mafia:'Mafya',doctor:'Doktor',detective:'Dedektif',citizen:'Vatandaş'},
+phaseNight:'Gece başladı. Herkes gözlerini kapatsın.',
+phaseMafia:'Mafya, uyanın ve seçiminizi yapın.',
+phaseDoctor:'Doktor, uyan ve koruyacağın kişiyi seç.',
+phaseDetective:'Dedektif, uyan ve bir oyuncuyu araştır.',
+phaseMorning:'Sabah oldu. Herkes uyansın.',
+phaseDiscussion:'Bir dakika boyunca tartışabilirsiniz.',
+phaseVote:'Tartışma bitti. Oylama zamanı.',
+roleMafia:'Sen mafyasın. Gizlice bir kurban seç.',
+roleDoctor:'Sen doktorsun. Birini koru.',
+roleDetective:'Sen dedektifsin. Bir oyuncuyu araştır.',
+roleCitizen:'Sen vatandaştın. Mafyayı bul.',
+noPlayers:'Seçilecek oyuncu yok.'
+}
+};
+
+let lang='ar',players=[],current=0;
+let mafiaTarget=null,doctorTarget=null,detectiveTarget=null;
+let votes=[],voiceEnabled=true,gameTimer=null;
+let discussionSeconds=60,votingCandidates=null,votingRound=1;
+
+function T(key){return words[lang][key]??words.ar[key]??key;}
+
+function changeLanguage(){
+ lang=document.getElementById('language').value;
+ document.documentElement.lang=lang;
+ document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+ document.getElementById('welcome').innerHTML=T('welcome');
+ document.getElementById('subtitle').textContent=T('subtitle');
+ document.getElementById('playerName').placeholder=T('name');
+ document.getElementById('create').textContent=T('create');
+ document.getElementById('join').textContent=T('join');
+ document.getElementById('roomCode').placeholder=T('code');
+ document.getElementById('gamesTitle').textContent=T('games');
+ T('names').forEach((v,i)=>document.getElementById('g'+(i+1)).textContent=v);
+ T('desc').forEach((v,i)=>document.getElementById('d'+(i+1)).textContent=v);
+ document.getElementById('mafiaHeading').textContent=T('mafiaTitle');
+ document.getElementById('mafiaIntro').textContent=T('intro');
+ document.getElementById('mafiaPlayer').placeholder=T('player');
+ document.getElementById('addPlayerBtn').textContent=T('add');
+ document.getElementById('startGameBtn').textContent=T('start');
+ document.getElementById('homeBtn').textContent=T('home');
+ document.getElementById('voiceLabel').textContent=T('voiceLabel');
+ updateVoiceButton();
+ renderPlayers();
+}
+
+function speak(text){
+ if(!voiceEnabled||!('speechSynthesis'in window))return;
+ window.speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);
+ u.lang={ar:'ar-SA',en:'en-US',tr:'tr-TR'}[lang];
+ u.volume=Number(document.getElementById('volume').value);
+ u.rate=.9;u.pitch=1.1;
+ const voices=window.speechSynthesis.getVoices();
+ const match=voices.find(v=>v.lang.toLowerCase().startsWith(lang));
+ if(match)u.voice=match;
+ window.speechSynthesis.speak(u);
+}
+function toggleVoice(){
+ voiceEnabled=!voiceEnabled;
+ if(!voiceEnabled&&'speechSynthesis'in window)speechSynthesis.cancel();
+ updateVoiceButton();
+}
+function updateVoiceButton(){
+ document.getElementById('voiceToggle').textContent=voiceEnabled?T('voiceOn'):T('voiceOff');
+}
+function testVoice(){speak(T('test'));}
+function openMafia(){
+ document.getElementById('home').style.display='none';
+ document.getElementById('mafiaScreen').style.display='block';
+}
+function closeMafia(){
+ clearInterval(gameTimer);
+ if('speechSynthesis'in window)speechSynthesis.cancel();
+ document.getElementById('mafiaScreen').style.display='none';
+ document.getElementById('home').style.display='block';
+ document.getElementById('mafiaResult').innerHTML='';
+}
+function addPlayer(){
+ const input=document.getElementById('mafiaPlayer'),name=input.value.trim();
+ if(!name){alert(T('emptyPlayer'));return;}
+ if(players.some(p=>p.name.toLowerCase()===name.toLowerCase())){alert(T('duplicate'));return;}
+ players.push({name,role:null,alive:true});input.value='';renderPlayers();
+}
+function renderPlayers(){
+ const list=document.getElementById('mafiaPlayers');list.innerHTML='';
+ players.forEach((p,i)=>{
+  const li=document.createElement('li'),span=document.createElement('span');
+  span.textContent=(i+1)+'. '+p.name;
+  const b=document.createElement('button');b.textContent=T('remove');
+  b.onclick=()=>{
+   if(players.some(x=>x.role)){alert('ابدئي لعبة جديدة أولاً.');return;}
+   players.splice(i,1);renderPlayers();
+  };
+  li.append(span,b);list.appendChild(li);
+ });
+}
+function shuffle(a){
+ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+ return a;
+}
+function startGame(){
+ clearInterval(gameTimer);
+ if(players.length<4){alert(T('need'));return;}
+ players.forEach(p=>{p.role=null;p.alive=true;});
+ const roles=['mafia','doctor','detective'];
+ while(roles.length<players.length)roles.push('citizen');
+ shuffle(roles);
+ players.forEach((p,i)=>p.role=roles[i]);
+ current=0;mafiaTarget=doctorTarget=detectiveTarget=null;
+ showRole();
+}
+function roleDescription(role){
+ return T({mafia:'roleMafia',doctor:'roleDoctor',detective:'roleDetective',citizen:'roleCitizen'}[role]);
+}
+function showRole(){
+ const r=document.getElementById('mafiaResult');
+ if(current>=players.length){beginNight();return;}
+ const p=players[current];
+ r.innerHTML=`<h2>${T('roles')}</h2><h3>${T('pass')}${escapeHTML(p.name)}</h3><p>${T('private')}</p><button id="revealRole">${T('reveal')}</button>`;
+ document.getElementById('revealRole').onclick=()=>{
+  r.innerHTML=`<h2>${escapeHTML(p.name)}</h2><h1>${T('rolesList')[p.role]}</h1><p>${roleDescription(p.role)}</p><button id="nextRole">${T('hide')}</button>`;
+  document.getElementById('nextRole').onclick=()=>{current++;showRole();};
+ };
+}
+function alivePlayers(){return players.filter(p=>p.alive);}
+function findRole(role){return players.find(p=>p.alive&&p.role===role);}
+function beginNight(){
+ mafiaTarget=doctorTarget=detectiveTarget=null;
+ const r=document.getElementById('mafiaResult');
+ r.innerHTML=`<h2>${T('night')}</h2><p>${T('nightText')}</p><button id="nightStart">${T('next')}</button>`;
+ speak(T('phaseNight'));
+ document.getElementById('nightStart').onclick=mafiaAction;
+}
+function privateAction(role,title,description,excluded,callback){
+ const r=document.getElementById('mafiaResult'),actor=findRole(role);
+ if(!actor){callback(null);return;}
+ const options=alivePlayers().filter(p=>p!==actor&&!excluded.includes(p.name));
+ if(!options.length){callback(null);return;}
+ r.innerHTML=`<h2>${title}</h2><h3>${T('pass')}${escapeHTML(actor.name)}</h3><p>${T('private')}</p><button id="readyAction">${T('next')}</button>`;
+ speak(role==='mafia'?T('phaseMafia'):role==='doctor'?T('phaseDoctor'):T('phaseDetective'));
+ document.getElementById('readyAction').onclick=()=>{
+  r.innerHTML=`<h2>${title}</h2><p>${description}</p><h3>${T('choose')}</h3><div id="actionOptions"></div>`;
+  const c=document.getElementById('actionOptions');
+  options.forEach(target=>{
+   const b=document.createElement('button');b.className='player-option';b.textContent=target.name;
+   b.onclick=()=>{
+    r.innerHTML=`<h2>${T('selected')}</h2><p>${T('private')}</p><button id="confirmAction">${T('next')}</button>`;
+    document.getElementById('confirmAction').onclick=()=>callback(target);
+   };c.appendChild(b);
+  });
+ };
+}
+function mafiaAction(){privateAction('mafia',T('mafia'),T('victim'),[],t=>{mafiaTarget=t;doctorAction();});}
+function doctorAction(){privateAction('doctor',T('doctor'),T('protect'),[],t=>{doctorTarget=t;detectiveAction();});}
+function detectiveAction(){privateAction('detective',T('detective'),T('investigate'),[],t=>{detectiveTarget=t;showInvestigation();});}
+function showInvestigation(){
+ const r=document.getElementById('mafiaResult');
+ if(!detectiveTarget){resolveNight();return;}
+ r.innerHTML=`<h2>${T('detective')}</h2><h3>${escapeHTML(detectiveTarget.name)}</h3><p>${detectiveTarget.role==='mafia'?T('checkMafia'):T('checkTown')}</p><button id="finishCheck">${T('next')}</button>`;
+ document.getElementById('finishCheck').onclick=resolveNight;
+}
+function resolveNight(){
+ const r=document.getElementById('mafiaResult');let msg='';
+ if(mafiaTarget&&mafiaTarget===doctorTarget)msg=T('saved');
+ else if(mafiaTarget){mafiaTarget.alive=false;msg=T('killed')+mafiaTarget.name;}
+ else msg=T('nobody');
+ r.innerHTML=`<h2>${T('morning')}</h2><p>${T('morningText')}</p><h3>${escapeHTML(msg)}</h3><button id="goDiscussion">${T('next')}</button>`;
+ speak(T('phaseMorning'));
+ document.getElementById('goDiscussion').onclick=()=>{if(!checkWinner())startDiscussion();};
+}
+function startDiscussion(){
+ clearInterval(gameTimer);discussionSeconds=60;
+ const r=document.getElementById('mafiaResult');
+ r.innerHTML=`<h2>${T('discussion')}</h2><p>${T('discussionText')}</p><h1 class="timer" id="discussionTimer">60</h1><button id="endDiscussion">${T('endDiscussion')}</button>`;
+ speak(T('phaseDiscussion'));
+ gameTimer=setInterval(()=>{
+  discussionSeconds--;
+  const d=document.getElementById('discussionTimer');if(d)d.textContent=discussionSeconds;
+  if(discussionSeconds<=0){clearInterval(gameTimer);startVoting(null,1);}
+ },1000);
+ document.getElementById('endDiscussion').onclick=()=>{clearInterval(gameTimer);startVoting(null,1);};
+}
+function startVoting(candidates,round){
+ clearInterval(gameTimer);votingCandidates=candidates;votingRound=round;votes=[];current=0;
+ speak(T('phaseVote'));showVoteTurn();
+}
+function showVoteTurn(){
+ const r=document.getElementById('mafiaResult'),voters=alivePlayers();
+ if(current>=voters.length){countVotes();return;}
+ const voter=voters[current];
+ const candidates=(votingCandidates||alivePlayers()).filter(p=>p.alive&&p!==voter);
+ r.innerHTML=`<h2>${T('vote')}</h2><h3>${T('passVote')}${escapeHTML(voter.name)}</h3><p>${T('private')}</p><button id="readyVote">${T('next')}</button>`;
+ document.getElementById('readyVote').onclick=()=>{
+  r.innerHTML=`<h2>${T('vote')}</h2><h3>${escapeHTML(voter.name)}</h3><p>${T('voteFor')}</p><div id="voteOptions"></div>`;
+  const c=document.getElementById('voteOptions');
+  if(!candidates.length){r.innerHTML=`<p>${T('noVotes')}</p>`;return;}
+  candidates.forEach(target=>{
+   const b=document.createElement('button');b.className='player-option';b.textContent=target.name;
+   b.onclick=()=>{votes.push({voter:voter.name,target:target.name});current++;showVoteTurn();};
+   c.appendChild(b);
+  });
+ };
+}
+function countVotes(){
+ const r=document.getElementById('mafiaResult'),counts={};
+ votes.forEach(v=>counts[v.target]=(counts[v.target]||0)+1);
+ const entries=Object.entries(counts);
+ if(!entries.length){r.innerHTML=`<h2>${T('noVotes')}</h2><button onclick="beginNight()">${T('newNight')}</button>`;return;}
+ const high=Math.max(...entries.map(e=>e[1]));
+ const tied=entries.filter(e=>e[1]===high).map(e=>e[0]);
+ if(tied.length>1){
+  if(votingRound===1){
+   r.innerHTML=`<h2>${T('tie')}</h2><p>${tied.map(escapeHTML).join(' - ')}</p><button id="revote">${T('next')}</button>`;
+   document.getElementById('revote').onclick=()=>startVoting(alivePlayers().filter(p=>tied.includes(p.name)),2);
+  }else{
+   r.innerHTML=`<h2>${T('tieAgain')}</h2><button id="afterTie">${T('newNight')}</button>`;
+   document.getElementById('afterTie').onclick=beginNight;
+  }return;
+ }
+ const eliminated=players.find(p=>p.name===tied[0]);
+ if(eliminated)eliminated.alive=false;
+ let tally='<ul>';
+ entries.sort((a,b)=>b[1]-a[1]).forEach(([n,c])=>tally+=`<li>${escapeHTML(n)} — ${c}</li>`);
+ tally+='</ul>';
+ r.innerHTML=`<h2>${T('votes')}</h2>${tally}<h3>${T('eliminated')}${escapeHTML(eliminated?.name||'')}</h3><button id="continueGame">${T('next')}</button>`;
+ document.getElementById('continueGame').onclick=()=>{if(!checkWinner())beginNight();};
+}
+function checkWinner(){
+ const mafia=players.filter(p=>p.alive&&p.role==='mafia').length;
+ const town=players.filter(p=>p.alive&&p.role!=='mafia').length;
+ if(mafia===0){showEnd(T('townWin'));return true;}
+ if(mafia>=town){showEnd(T('mafiaWin'));return true;}
+ return false;
+}
+function showEnd(message){
+ clearInterval(gameTimer);
+ const r=document.getElementById('mafiaResult');
+ r.innerHTML=`<h1>${message}</h1><h3>${T('roles')}</h3><ul id="finalRoles"></ul><button id="restartGame">${T('startAgain')}</button>`;
+ players.forEach(p=>{
+  const li=document.createElement('li');li.textContent=p.name+' — '+T('rolesList')[p.role];
+  document.getElementById('finalRoles').appendChild(li);
+ });
+ speak(message);
+ document.getElementById('restartGame').onclick=()=>{
+  players.forEach(p=>{p.role=null;p.alive=true;});
+  mafiaTarget=doctorTarget=detectiveTarget=null;current=0;renderPlayers();r.innerHTML='';
+ };
+}
+function escapeHTML(v){
+ return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ربط أزرار الصفحة */
+document.getElementById('language').addEventListener('change',changeLanguage);
+document.getElementById('mafiaCard').addEventListener('click',openMafia);
+document.getElementById('playMafia').addEventListener('click',e=>{e.stopPropagation();openMafia();});
+document.getElementById('voiceToggle').addEventListener('click',toggleVoice);
+document.getElementById('testVoice').addEventListener('click',testVoice);
+document.getElementById('addPlayerBtn').addEventListener('click',addPlayer);
+document.getElementById('startGameBtn').addEventListener('click',startGame);
+document.getElementById('homeBtn').addEventListener('click',closeMafia);
+changeLanguage();
+</script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  update
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-database.js";
+
+import {
+  getAuth,
+  signInAnonymously
+} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyDnX3w1rUL1SK1D-O1WJNRZOqX3-KZ18lA",
+  authDomain: "playmate-666ea.firebaseapp.com",
+  databaseURL: "https://playmate-666ea-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "playmate-666ea",
+  storageBucket: "playmate-666ea.firebasestorage.app",
+  messagingSenderId: "382320435384",
+  appId: "1:382320435384:web:8b0aa27a3704db9159144d",
+  measurementId: "G-196Y2LFW8X"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+window.playmateFirebase = {db, auth};
+
+const message = document.getElementById("message");
+
+const authReady = signInAnonymously(auth);
+
+authReady
+.then(() => {
+  console.log("Playmate connected to Firebase");
+})
+.catch(error => {
+  console.error("Firebase login error:", error);
+  message.textContent = "Firebase connection error: " + error.message;
+});
+
+function makeRoomCode() {
+  return Math.random().toString(36).substring(2, 7).toUpperCase();
+}
+
+window.createRoom = async function() {
+  const name = document.getElementById("playerName").value.trim();
+
+  if (!name) {
+    message.textContent = "اكتبي اسمك أولاً.";
+    return;
+  }
+
+  message.textContent = "جاري إنشاء الغرفة...";
+
+  try {
+    await authReady;
+
+    const user = auth.currentUser;
+    if (!user) throw new Error("User authentication failed");
+
+    const code = makeRoomCode();
+    const roomRef = ref(db, `rooms/${code}/public`);
+
+    await set(roomRef, {
+      hostUid: user.uid,
+      hostName: name,
+      roomCode: code,
+      players: {
+        [user.uid]: {
+          name: name,
+          isHost: true
+        }
+      },
+      phase: "waiting",
+      createdAt: Date.now()
+    });
+
+    document.getElementById("roomCode").value = code;
+    message.textContent = "تم إنشاء الغرفة! رمزها: " + code;
+
+    console.log("Room created:", code);
+
+  } catch(error) {
+    console.error("Create room error:", error);
+    message.textContent = "تعذر إنشاء الغرفة: " + error.message;
+  }
+};
+
+window.joinRoom = async function() {
+  const name = document.getElementById("playerName").value.trim();
+  const code = document.getElementById("roomCode").value.trim().toUpperCase();
+
+  if (!name) {
+    message.textContent = "اكتبي اسمك أولاً.";
+    return;
+  }
+
+  if (!code) {
+    message.textContent = "أدخلي رمز الغرفة.";
+    return;
+  }
+
+  message.textContent = "جاري البحث عن الغرفة...";
+
+  try {
+    await authReady;
+
+    const user = auth.currentUser;
+    const roomRef = ref(db, `rooms/${code}/public`);
+    const snapshot = await get(roomRef);
+
+    if (!snapshot.exists()) {
+      message.textContent = "الغرفة غير موجودة.";
+      return;
+    }
+
+    await update(roomRef, {
+      [`players/${user.uid}`]: {
+        name: name,
+        isHost: false
+      }
+    });
+
+    message.textContent = "تم الانضمام إلى الغرفة " + code;
+    console.log("Joined room:", code);
+
+  } catch(error) {
+    console.error("Join room error:", error);
+    message.textContent = "تعذر الانضمام: " + error.message;
+  }
+};
+
+document.getElementById("create").addEventListener("click", window.createRoom);
+document.getElementById("join").addEventListener("click", window.joinRoom);
+
+</script>
+</body>
+</html>
